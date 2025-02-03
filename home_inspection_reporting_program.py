@@ -26,7 +26,6 @@ def save_as():
         global current_file
         current_file = filename
         save_data(current_file)
-        generate_report_button.config(state=tk.NORMAL)  # Enable the Generate Report button
 
 def save():
     """Save the form data to the current file (if any)."""
@@ -36,14 +35,19 @@ def save():
         save_as()  # If no file exists, prompt the user to use Save As
 
 def generate_report():
-    """Generates a PDF report with the provided data, using the same filename as the JSON file."""
+    """Generates a PDF report with the provided data, and allows the user to choose the filename and location."""
     if not current_file:
-        messagebox.showwarning("Warning", "Please save the data first before generating a report.")
-        return
+        # Prompt user to save the file first if not saved
+        messagebox.showinfo("Save File", "Please save the form data first.")
+        save_as()
+        if not current_file:
+            return  # If no file is saved, exit the function
 
-    # Get the base name of the JSON file (without extension)
-    base_filename = os.path.splitext(os.path.basename(current_file))[0]
-    pdf_file = f"{base_filename}.pdf"  # Use the same base name for the PDF
+    # Ask the user for the filename and location of the PDF report
+    pdf_file = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+    
+    if not pdf_file:
+        return  # If the user cancels the save dialog, exit the function
 
     data = {
         "inspector_name": entry_name.get(),
@@ -85,14 +89,14 @@ entry_findings = tk.Text(root, height=5, width=30)
 entry_findings.grid(row=2, column=1)
 
 # Buttons
-generate_report_button = tk.Button(root, text="Generate Report", command=generate_report, state=tk.DISABLED)
-generate_report_button.grid(row=3, column=1)
-
 save_button = tk.Button(root, text="Save", command=save)
 save_button.grid(row=4, column=0)
 
 save_as_button = tk.Button(root, text="Save As", command=save_as)
 save_as_button.grid(row=5, column=0)  # Positioned below the Save button
+
+generate_report_button = tk.Button(root, text="Generate Report", command=generate_report)
+generate_report_button.grid(row=3, column=1)
 
 # Run the application
 root.mainloop()
